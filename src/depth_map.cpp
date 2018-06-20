@@ -56,36 +56,50 @@ int main(int argc, char** argv)
   			{
     			for(int jjj=0;jjj<160;jjj++)
     			{
-    				if ((int)depth_est.at<uchar>(jjj, iii)>100)
+    				if ((int)depth_est.at<uchar>(jjj, iii)>150)
     				{
-        				depth_est.at<uchar>(jjj,iii) = 255;
-        				sum_=sum_+2;
+        				// depth_est.at<uchar>(jjj,iii) = 255;
+        				sum_=sum_+0;
     				}
-      				else
+      				else if ((int)depth_est.at<uchar>(jjj, iii)<50)
       				{	
-      					sum_=sum_-1;
-        				depth_est.at<uchar>(jjj,iii) = 0;
+      					sum_=sum_+100;
+        				// depth_est.at<uchar>(jjj,iii) = 0;
+        			}
+        			else
+        			{
+        				sum_=sum_-((int)depth_est.at<uchar>(jjj, iii)-150);
         			}
     			}
-    			if(sum_>0)
-    			sum[iii]=0;
-    			else
-    			sum[iii]=99;
+    			sum[iii]=(sum_/160);
     			sum_=0;
   			}
   			map_.header.stamp = ros::Time::now();
-        	map_.header.frame_id = "map";
+        	map_.header.frame_id = "/imu";
         	map_.info.resolution = 0.05f;
-        	map_.info.height = 60;
+        	map_.info.height = 100;
         	map_.info.width = 47;
-        	map_.info.origin.position.x=-1.175;
-        	map_.info.origin.position.y= 0;
-        	for(int ii=0;ii<60;ii++)
+        	map_.info.origin.position.x=-0;
+        	map_.info.origin.position.y= 1.175;
+        	map_.info.origin.orientation.x=0;
+        	map_.info.origin.orientation.y=0;
+        	map_.info.origin.orientation.z=-0.7068252;
+        	map_.info.origin.orientation.w=0.7073883;
+
+        	for(int ii=0;ii<100;ii++)
         	{
         		int count=0;
         		for(int jj=0;jj<47;jj++)
         		{
-        			map_.data.push_back(sum[jj*16]);
+        			if(sum[jj*16]<100)
+        			{
+        				if(ii<100-(sum[jj*16]))
+        					map_.data.push_back(0);
+        				else
+        					map_.data.push_back(100);
+        			}
+        			else
+        				map_.data.push_back(sum[jj*16]);
         			count++;
 				}
 			}
