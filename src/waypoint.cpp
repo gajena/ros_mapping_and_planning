@@ -133,16 +133,16 @@ int main(int argc, char **argv)
 
     ros::Publisher setpoint_pub = nh.advertise<geometry_msgs::PoseArray>("/waypoints", 10);
 
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(10);
     
     while (ros::ok())
     {
         mapSize = MapSize(map_.info.width, map_.info.height);
         mapData = vector<MapNode>(mapSize.size);
-        cout << "MapSize(" << mapSize.width << ", " << mapSize.height << ", " << mapSize.size << ")" << endl;
+        // cout << "MapSize(" << mapSize.width << ", " << mapSize.height << ", " << mapSize.size << ")" << endl;
         offset_x =  map_.info.origin.position.x;
         offset_y = map_.info.origin.position.y;
-        cout << "MapSize(" << offset_x << ", " << offset_y << ", " << mapSize.size << ")" << endl;
+        // cout << "MapSize(" << offset_x << ", " << offset_y << ", " << mapSize.size << ")" << endl;
         if (map_.info.width > 0)
         {
             for (int y = 0; y < map_.info.height; y++)
@@ -151,12 +151,12 @@ int main(int argc, char **argv)
                 {
                     if ((x == (int)((odo_.pose.pose.position.x-offset_x )*20.0f)) && (y == (int)((odo_.pose.pose.position.y-offset_y )*20.0f)))
                     {
-                    cout << "debug=" << (x==(int)(odo_.pose.pose.position.x- offset_x) * 20) <<","<<( y==(int)(odo_.pose.pose.position.y - offset_y) * 20) << "," << x << "," << y << endl;
+                    // cout << "debug=" << (x==(int)(odo_.pose.pose.position.x- offset_x) * 20) <<","<<( y==(int)(odo_.pose.pose.position.y - offset_y) * 20) << "," << x << "," << y << endl;
                          MapNode node(x, y, NODE_TYPE_START);
                         mapData[y * mapSize.width + x] = node;
                         startNode = &mapData[y * mapSize.width + x];
                     }
-                    else if (x == (int)((offset_x-offset_x ) * 20.0f) && y == (int)((offset_y+2-offset_y ) * 20.0f))
+                    else if (x == (int)((offset_x-offset_x ) * 20.0f) && y == (int)((offset_y+3-offset_y ) * 20.0f))
                     {
                         MapNode node(x, y, NODE_TYPE_END);
                         mapData[y * mapSize.width + x] = node;
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
                     else if (map_.data[(map_.info.width) * y + x] > 51 )
                     {
                         mapData[(map_.info.width) * y + x] = MapNode(x, y, NODE_TYPE_OBSTACLE);
-                        int obs_size =15 ;
+                        int obs_size =1 ;
                         {
                         if (map_.data[(map_.info.width) * (y-1) + x] < 50 && y>(obs_size))
                         {
@@ -202,14 +202,14 @@ int main(int argc, char **argv)
                 }
             }
 
-            for (int y = 0; y < map_.info.height; y++)
-            {
-                for (int x = 0; x < map_.info.width; x++)
-                {
-                    cout << mapAt(x, y)->type << " ";
-                }
-                cout << endl;
-            }
+            // for (int y = 0; y < map_.info.height; y++)
+            // {
+            //     for (int x = 0; x < map_.info.width; x++)
+            //     {
+            //         cout << mapAt(x, y)->type << " ";
+            //     }
+            //     cout << endl;
+            // }
 
             openList.push_back(startNode);
             vector<MapNode *> path = find();
@@ -260,12 +260,12 @@ vector<MapNode *> find()
         openList.erase(remove(openList.begin(), openList.end(), node), openList.end());
         node->flag = NODE_FLAG_CLOSED;
         cout << iteration++ << endl;
-        cout << "   Current node " << node->x << ", " << node->y << " ..." << endl;
+        // cout << "   Current node " << node->x << ", " << node->y << " ..." << endl;
        
 
         if (node->parent != 0)
         {
-            cout << "       ... parent " << node->parent->x << ", " << node->parent->y << endl;
+            // // cout << "       ... parent " << node->parent->x << ", " << node->parent->y << endl;
         
         }
         if (node == targetNode)
@@ -277,7 +277,7 @@ vector<MapNode *> find()
             break;
         }
         vector<MapNode *> neighborNodes = neighbors(node);
-        cout << "       ... has " << neighborNodes.size() << " neighbors" << endl;
+        // cout << "       ... has " << neighborNodes.size() << " neighbors" << endl;
         for (int i = 0; i < neighborNodes.size(); i++)
         {
             MapNode *_node = neighborNodes[i];
@@ -315,9 +315,11 @@ vector<MapNode *> find()
             pose_.position.x = ((double)_node->parent->x / 20.0+offset_x);
             pose_.position.y = ((double)_node->parent->y / 20.0+offset_y);
             waypoints_.poses.push_back(pose_);
+            
             _node = _node->parent;
         }
         reverse(path.begin(), path.end());
+        reverse(waypoints_.poses.begin(), waypoints_.poses.end());
     }
     return path;
 }

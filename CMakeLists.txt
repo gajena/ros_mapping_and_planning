@@ -33,3 +33,12 @@ target_link_libraries(waypoint
 )
 
 add_dependencies(waypoint  ${catkin_EXPORTED_TARGETS})
+
+add_executable(depth_map src/depth_map.cpp)
+target_link_libraries(depth_map
+        ${catkin_LIBRARIES}
+                        ${OpenCV_LIBRARIES}
+)
+
+add_dependencies(depth_map  ${catkin_EXPORTED_TARGETS})
+
