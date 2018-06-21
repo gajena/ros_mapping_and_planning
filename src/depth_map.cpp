@@ -5,6 +5,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Odometry.h>
 
 cv::Mat depth_est=cv::Mat::zeros(160,752, CV_8UC1);;
 
@@ -30,6 +31,15 @@ void imageCb(const sensor_msgs::Image msg)
   	}
 }
 
+nav_msgs::Odometry odo_;
+bool odo_update=false;
+
+void odomCb(const nav_msgs::Odometry msg)
+{
+	odo_=msg;
+	std::cout<<"odo"<<odo_update<<std::endl;
+	odo_update=true;
+}
 
 
 int main(int argc, char** argv)
@@ -42,12 +52,15 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
   	ros::Rate loop_rate(10);
 	ros::Subscriber image_sub = nh.subscribe<sensor_msgs::Image>("/flame/depth_registered/image_rect",10,imageCb);
+   	ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/rovio/odometry",10,odomCb);
    	ros::Publisher map_pub = nh.advertise<nav_msgs::OccupancyGrid>("/map", 10);
 
-  	int i = 0,j=5,local_sum[160],sum_=0;
+  	int count=0,trig=0,local_sum[160],sum_=0;
   	long long int k=0,kk=0;
   	float sum[752]={0};
-	nav_msgs::OccupancyGrid map_;  
+  	std::vector<signed char> v;
+	nav_msgs::OccupancyGrid map_;
+
   	while (nh.ok())
 	{
 		if(depth_est.size().width>1)
@@ -58,13 +71,11 @@ int main(int argc, char** argv)
     			{
     				if ((int)depth_est.at<uchar>(jjj, iii)>150)
     				{
-        				// depth_est.at<uchar>(jjj,iii) = 255;
         				sum_=sum_+0;
     				}
       				else if ((int)depth_est.at<uchar>(jjj, iii)<50)
       				{	
       					sum_=sum_+100;
-        				// depth_est.at<uchar>(jjj,iii) = 0;
         			}
         			else
         			{
@@ -77,37 +88,53 @@ int main(int argc, char** argv)
   			map_.header.stamp = ros::Time::now();
         	map_.header.frame_id = "/imu";
         	map_.info.resolution = 0.05f;
-        	map_.info.height = 100;
+        	map_.info.height = 80;
         	map_.info.width = 47;
-        	map_.info.origin.position.x=-0;
+        	map_.info.origin.position.x=0;
         	map_.info.origin.position.y= 1.175;
         	map_.info.origin.orientation.x=0;
         	map_.info.origin.orientation.y=0;
         	map_.info.origin.orientation.z=-0.7068252;
         	map_.info.origin.orientation.w=0.7073883;
 
-        	for(int ii=0;ii<100;ii++)
+        	for(int ii=0;ii<60;ii++)
         	{
-        		int count=0;
         		for(int jj=0;jj<47;jj++)
         		{
         			if(sum[jj*16]<100)
         			{
         				if(ii<100-(sum[jj*16]))
-        					map_.data.push_back(0);
+        					v.push_back(0);
         				else
-        					map_.data.push_back(100);
+        					v.push_back(100);
         			}
         			else
-        				map_.data.push_back(sum[jj*16]);
-        			count++;
+        				v.push_back(sum[jj*16]);
 				}
 			}
 		}
 
-		map_pub.publish(map_);
-		map_.data.clear();
-
+		if(count==0)
+		{
+			map_.data = v;
+				count=count+1;
+		}
+		if(count!=0 && odo_update==true)
+		{
+			map_.data.resize(47*2*(count));
+			std::cout<<map_.data.size()<<std::endl;
+			for(int i=0;i<v.size();i++)
+			map_.data.push_back(v[i]);
+			v.clear();
+			count=count+1;
+			if(count==11)
+			{	
+			map_pub.publish(map_);
+			count=0;
+			trig=1;
+			}
+			odo_update=false;
+		}
 		ros::spinOnce();
     	loop_rate.sleep();
 	}
