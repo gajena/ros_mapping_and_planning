@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   visualization_msgs
 )
-
+catkin_package()
 
 find_package (OpenCV REQUIRED)
 
