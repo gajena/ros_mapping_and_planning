@@ -42,3 +42,10 @@ target_link_libraries(depth_map
 
 add_dependencies(depth_map  ${catkin_EXPORTED_TARGETS})
 
+
+add_executable(test_waypoint src/test_waypoint.cpp)
+target_link_libraries(test_waypoint
+      ${catkin_LIBRARIES}
+)
+
+add_dependencies(test_waypoint  ${catkin_EXPORTED_TARGETS})
