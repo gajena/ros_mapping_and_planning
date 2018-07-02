@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   *****************************************************************************/
 	ros::init(argc, argv, "depth_map");
 	ros::NodeHandle nh;
-  	ros::Rate loop_rate(10);
+  	ros::Rate loop_rate(30);
 	ros::Subscriber image_sub = nh.subscribe<sensor_msgs::Image>("/flame/depth_registered/image_rect",10,imageCb);
    	ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/rovio/odometry",10,odomCb);
    	ros::Publisher map_pub = nh.advertise<nav_msgs::OccupancyGrid>("/map", 10);
@@ -87,23 +87,16 @@ int main(int argc, char** argv)
     			sum_=0;
   			}
 			kk=751;
-  			map_.header.stamp = ros::Time::now();
+  			  map_.header.stamp = ros::Time::now();
         	map_.header.frame_id = "/imu";
         	map_.info.resolution = 0.05f;
         	map_.info.height = 50;
         	map_.info.width = 47;
         	map_.info.origin.position.x=0;
         	map_.info.origin.position.y=1.175;
-			map_.info.origin.orientation.w=0.707388;
-			map_.info.origin.orientation.z=-0.706825;
-			// map_.info.origin.orientation.y = 0.9999997;
-			// map_.info.origin.orientation.w = 0.0007963;
-			// map_.info.origin.orientation.y=0;
-			// map_.info.origin.orientation.x=-0;
-			// map_.info.origin.orientation.x = 0;
-			// map_.info.origin.orientation.w = 1;
-			// 0.707388, 0.706825, 0.0005629, 0.0005633
-			// 0.707388, -0.706825, -0.0005629, 0.0005633
+			    map_.info.origin.orientation.w=0.707388;
+			    map_.info.origin.orientation.z=-0.706825;
+			
 			for(int ii=0;ii<40;ii++)
         	{
         		for(int jj=0;jj<47;jj++)
