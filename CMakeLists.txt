@@ -31,7 +31,6 @@ target_link_libraries(waypoint
     	${catkin_LIBRARIES}
 			${OpenCV_LIBRARIES}
 )
-
 add_dependencies(waypoint  ${catkin_EXPORTED_TARGETS})
 
 add_executable(depth_map src/depth_map.cpp)
@@ -39,7 +38,6 @@ target_link_libraries(depth_map
         ${catkin_LIBRARIES}
                         ${OpenCV_LIBRARIES}
 )
-
 add_dependencies(depth_map  ${catkin_EXPORTED_TARGETS})
 
 
@@ -47,5 +45,11 @@ add_executable(test_waypoint src/test_waypoint.cpp)
 target_link_libraries(test_waypoint
       ${catkin_LIBRARIES}
 )
-
 add_dependencies(test_waypoint  ${catkin_EXPORTED_TARGETS})
+
+add_executable(global_map src/global_map.cpp)
+target_link_libraries(global_map
+        ${catkin_LIBRARIES}
+                        ${OpenCV_LIBRARIES}
+)
+add_dependencies(global_map  ${catkin_EXPORTED_TARGETS})

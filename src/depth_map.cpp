@@ -26,13 +26,14 @@ void imageCb(const sensor_msgs::Image msg)
   	{
   		for(int b=0;b<752;b++)
   		{
-  			depth_est.at<uchar>(a,b) = cv_ptr->image.at<float>(a,b)*15;
+  			depth_est.at<uchar>(a,b) = cv_ptr->image.at<float>(a,b)*40;
   		}
   	}
 }
 
 nav_msgs::Odometry odo_;
 bool odo_update=false;
+cv::Mat toMat(const nav_msgs::OccupancyGrid map);
 
 void odomCb(const nav_msgs::Odometry msg)
 {
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
   			  map_.header.stamp = ros::Time::now();
         	map_.header.frame_id = "/imu";
         	map_.info.resolution = 0.05f;
-        	map_.info.height = 50;
+        	map_.info.height = 40;
         	map_.info.width = 47;
         	map_.info.origin.position.x=0;
         	map_.info.origin.position.y=1.175;
@@ -116,29 +117,60 @@ int main(int argc, char** argv)
 			}
 		}
 
-		if(count==0)
+		// if(count==0)
 		{
 			map_.data = v;
 				count=count+1;
 		}
-		if(count!=0 && odo_update==true)
-		{
-			map_.data.resize(47*1*(count));
-			// std::cout<<.size()<<std::endl;
-			for(int i=0;i<v.size();i++)
-			map_.data.push_back(v[i]);
+		// if(count!=0 && odo_update==true)
+		// {
+		// 	map_.data.resize(47*1*(count));
+		// 	// std::cout<<.size()<<std::endl;
+		// 	for(int i=0;i<v.size();i++)
+		// 	map_.data.push_back(v[i]);
 			v.clear();
-			count=count+1;
-			if(count==11)
-			{	
+		// 	count=count+1;
+		// 	if(count==11)
+		// 	{	
+			cv::Mat  img = toMat(map_);
+			cv::imshow( "window.png", img );
+			cv::waitKey(0); 
 			map_pub.publish(map_);
-			count=0;
-			trig=1;
-			}
-			odo_update=false;
-		}
+			map_.data.clear();
+			// count=0;
+			// trig=1;
+			// }
+			// odo_update=false;
+		// }
 		ros::spinOnce();
     	loop_rate.sleep();
 	}
   return 0;
+}
+
+  
+cv::Mat toMat(const nav_msgs::OccupancyGrid map)
+{
+  uint8_t *data = (uint8_t*) map.data.data(),
+           testpoint = data[0];
+  bool mapHasPoints = false;
+
+  cv::Mat im(map.info.height, map.info.width, CV_8UC1);
+
+  // transform the map in the same way the map_saver component does
+  for (size_t i=0; i<map.data.size(); i++)
+  {
+    if (data[i] == 0)        im.data[map.data.size()-i-1] = 254;
+    else if (data[i] == 100) im.data[map.data.size()-i-1] = 0;
+    else im.data[map.data.size()-i-1] = 205;
+
+    // just check if there is actually something in the map
+    if (i!=0) mapHasPoints = mapHasPoints || (data[i] != testpoint);
+    testpoint = data[i];
+  }
+
+  // sanity check
+  if (!mapHasPoints) { ROS_WARN("map is empty, ignoring update."); }
+
+  return im;
 }
