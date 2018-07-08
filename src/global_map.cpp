@@ -200,7 +200,7 @@ int main(int argc, char**argv)
 				for(int j=0; j<img_temp.cols; j++) 
 				{	
 					if(img_temp.at<uchar>(i,j)>140.0)
-						img.at<uchar>(479+i-(int)(odo_.pose.pose.position.x*20),474+j-(int)(odo_.pose.pose.position.y*20)) = img_temp.at<uchar>(i,j);
+						img.at<uchar>(466+i-(int)(odo_.pose.pose.position.x*20),477+j-(int)(odo_.pose.pose.position.y*20)) = img_temp.at<uchar>(i,j);
 				}
 			}
 
