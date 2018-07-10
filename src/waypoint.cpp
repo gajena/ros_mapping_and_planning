@@ -21,7 +21,7 @@ const int NODE_TYPE_START = 2;
 const int NODE_TYPE_END = 3;
 
 const int G_DIRECT = 10;
-const int G_SKEW = 14;
+const int G_SKEW = 10;
 
 class MapNode
 {
@@ -94,7 +94,7 @@ void drawOpenList();
  *	The heuristic should be cost times manhattan distance: */
 inline int manhattan_distance(MapNode *node1, MapNode *node2)
 {
-    return abs(node2->x - node1->x) + abs(node2->y - node1->y);
+    return sqrt( pow((node2->x - node1->x),2) + pow((node2->y - node1->y),2) );
 }
 
 /**	If on your map1 you allow diagonal movement, then you need a different heuristic.
@@ -103,7 +103,7 @@ inline int manhattan_distance(MapNode *node1, MapNode *node2)
  *	This function handles diagonals: */
 inline int diagonal_distance(MapNode *node1, MapNode *node2)
 {
-    return max(abs(node2->x - node1->x), abs(node2->y - node1->y));
+    return sqrt( pow((node2->x - node1->x),2) + pow((node2->y - node1->y),2) );
 }
 
 nav_msgs::OccupancyGrid map_; 
@@ -114,7 +114,7 @@ void mapcb(const nav_msgs::OccupancyGrid::ConstPtr &msg)
 
 geometry_msgs::PoseArray waypoints_;
 geometry_msgs::Pose pose_;
-double offset_x ,offset_y;
+double offset_x ,offset_y, min_dist = 100000;
     
     
 nav_msgs::Odometry odo_;
@@ -149,12 +149,25 @@ int main(int argc, char **argv)
         {
             for (int y = 0; y < map_.info.height; y++)
             {
-                for (int x = 1; x < map_.info.width-1; x++)
+                for (int x = 0; x < map_.info.width; x++)
                 {
                     if(map_.data[(map_.info.width) * y + x] == 0)
                     {
-                        x_des = x;
-                        y_des = y; 
+                        float x_temp = x ;
+                        float y_temp = y ;
+
+                        float x_dest = (1 - offset_x)*20;
+                        float y_dest = (1 - offset_y)*20;
+
+                        float target_dist =  sqrt( pow((x_temp - x_dest),2) + pow((y_temp - y_dest),2) ); 
+                        if(target_dist < min_dist)
+                        {
+                            min_dist  = target_dist;
+                            x_des = x_temp ;
+                            y_des = y_temp ;
+                            cout << "x_des" << x_des << ", " << y_des << ", " << x << ")" << endl;
+                        }
+
                     }
 
                 }
@@ -171,7 +184,7 @@ int main(int argc, char **argv)
                         mapData[y * mapSize.width + x] = node;
                         startNode = &mapData[y * mapSize.width + x];
                     }
-                    else if ((x == (int)((1.0 - offset_x) * 20.0f)) && (y == (int)((-0.6-offset_y) * 20.0f)))
+                    else if ((x == (int)(x_des )) && (y == (int)(y_des )))
                     {
                         MapNode node(x, y, NODE_TYPE_END);
                         mapData[y * mapSize.width + x] = node;
@@ -257,7 +270,7 @@ void drawOpenList()
 vector<MapNode *> find()
 {
     vector<MapNode *> path;
-    cout << "Finding started!" << endl;
+    // cout << "Finding started!" << endl;
     int iteration = 0;
     MapNode *node;
     MapNode *reversedPtr = 0;

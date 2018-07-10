@@ -89,29 +89,30 @@ int main(int argc, char** argv)
 			kk=751;
   			  map_.header.stamp = ros::Time::now();
         	map_.header.frame_id = "/imu";
-        	map_.info.resolution = 0.05f;
-        	map_.info.height = 40;
-        	map_.info.width = 47;
+        	map_.info.resolution = 2.5/752.0;
+        	map_.info.height = (int)(2.0/map_.info.resolution);
+        	map_.info.width = (int)(2.5/map_.info.resolution);
         	map_.info.origin.position.x=0;
         	map_.info.origin.position.y=1.175;
-			    map_.info.origin.orientation.w=0.707388;
-			    map_.info.origin.orientation.z=-0.706825;
+			map_.info.origin.orientation.w=0.707388;
+			map_.info.origin.orientation.z=-0.706825;
 			
-			for(int ii=0;ii<40;ii++)
+			
+			for(int ii=0;ii<map_.info.height;ii++)
         	{
-        		for(int jj=0;jj<47;jj++)
+        		for(int jj=0;jj<map_.info.width;jj++)
         		{
-        			if(ii==59 || jj==0 || jj==46)
-        					v.push_back(0);
-        			else if(sum[jj*16]<100)
+        			// if(ii==59 || jj==0 || jj==46)
+        					// v.push_back(0);
+        			if(sum[jj]<100)
         			{
-        				if(ii<100-(sum[jj*16]))
+        				if(ii<100-(sum[jj]))
         					v.push_back(0);
         				else
         					v.push_back(100);
         			}
         			else
-        				v.push_back(sum[jj*16]);
+        				v.push_back(sum[jj]);
 				}
 			}
 		}
@@ -131,9 +132,9 @@ int main(int argc, char** argv)
 		// 	count=count+1;
 		// 	if(count==11)
 		// 	{	
-			cv::Mat  img = toMat(map_);
-			cv::imshow( "window.png", img );
-			cv::waitKey(0); 
+			// cv::Mat  img = toMat(map_);
+			// cv::imshow( "window.png", img );
+			// cv::waitKey(0); 
 			map_pub.publish(map_);
 			map_.data.clear();
 			// count=0;

@@ -110,9 +110,9 @@ int main(int argc, char**argv)
 
 			map_temp.header.stamp = ros::Time::now();
         	map_temp.header.frame_id = "/imu";
-        	map_temp.info.resolution = 0.05f;
-        	map_temp.info.height = 40;
-        	map_temp.info.width = 47;
+        	map_temp.info.resolution = 0.0033f;
+        	map_temp.info.height = 2.0/map_temp.info.resolution;
+        	map_temp.info.width = 2.5/map_temp.info.resolution;
         	map_temp.info.origin.position.x=0;
         	map_temp.info.origin.position.y=1.175;
 			map_temp.info.origin.orientation.w=0.707388;
@@ -140,13 +140,13 @@ int main(int argc, char**argv)
   		
 			map_.header.stamp = ros::Time::now();
         	map_.header.frame_id = "world";
-        	map_.info.resolution = 0.05f;
-        	map_.info.height = 1000;
-        	map_.info.width = 1000;
+        	map_.info.resolution = 0.0033f;
+        	map_.info.height = 102.0/map_.info.resolution ;
+        	map_.info.width = 102.5/map_.info.resolution ;
         	map_.info.origin.position.x = -(map_.info.height/40.0f);
         	map_.info.origin.position.y = -(map_.info.width/40.0f);
-			float init_x = 20*(odo_.pose.pose.position.x - (map_.info.origin.position.x));
-			float init_y = 20*(odo_.pose.pose.position.y - (map_.info.origin.position.y));
+			float init_x = 100*(odo_.pose.pose.position.x - (map_.info.origin.position.x));
+			float init_y = 100*(odo_.pose.pose.position.y - (map_.info.origin.position.y));
 			tf::Quaternion q1(
             	odo_.pose.pose.orientation.x,
                 odo_.pose.pose.orientation.y,
@@ -203,8 +203,9 @@ int main(int argc, char**argv)
 						img.at<uchar>(466+i-(int)(odo_.pose.pose.position.x*20),477+j-(int)(odo_.pose.pose.position.y*20)) = img_temp.at<uchar>(i,j);
 				}
 			}
-
-			
+			// for ( int i = 1; i < 31;i = i + 2 )
+			// GaussianBlur( img, img, Size( 45, 45 ), 0, 0 );
+cv::morphologyEx(img, img, CV_MOP_CLOSE,getStructuringElement(cv::MORPH_RECT, cv::Size(17, 3) ));			
 			for(int i=0; i<img.rows; i++) 
 			{
 				for(int j=0; j<img.cols; j++) 

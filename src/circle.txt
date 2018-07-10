@@ -1,0 +1,6 @@
+for (int t =0 ; t<21 ;t++)
+    {
+        pose_.position.x = 2*cos(PI*t/10);
+        pose_.position.y = 2*sin(PI*t/10);
+        waypoints_.poses.push_back(pose_);
+    }

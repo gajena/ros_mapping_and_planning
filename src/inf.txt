@@ -1,0 +1,6 @@
+for (int t =0 ; t<21 ;t++)
+{
+    pose_.position.x = 1.41*cos(PI*t/10)/(1+pow(sin(PI*t/10),2));
+    pose_.position.y = 1.41*sin(PI*t/10)*cos(PI*t/10)/(1+pow(sin(PI*t/10),2));
+    waypoints_.poses.push_back(pose_);
+}
